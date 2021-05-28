@@ -42,7 +42,11 @@ app.get('/api/blocks',(req,res,next)=>{
 
 app.post('/api/mine',(req,res,next) =>{
     const {data } = req.body;
+    
     blockchain.addBlock({ data });
+
+    pubsub.broadcastChain();
+
     res.redirect('/api/blocks');
 });
 
