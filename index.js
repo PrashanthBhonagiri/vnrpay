@@ -35,6 +35,11 @@ app.get('/api/blocks',(req,res,next)=>{
     res.json(blockchain.chain);
 }); 
 
+app.post('/api/mine',(req,res,next) =>{
+    const {data } = req.body;
+    blockchain.addBlock({ data });
+    res.redirect('/api/blocks');
+});
 
 function notFound(req, res, next) {
     res.status(404);
