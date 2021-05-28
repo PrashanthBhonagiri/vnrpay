@@ -6,7 +6,7 @@ const helmet = require('helmet');
 require('dotenv').config();
 
 const Blockchain = require('./blockchain');
-
+const PubSub = require('./pubsub');
 const app = express();
 
 app.use(morgan('dev'));
@@ -30,6 +30,9 @@ app.use(helmet());
 app.use(cors());
 
 const blockchain = new Blockchain();
+const pubsub = new PubSub({blockchain}); 
+
+setTimeout(() =>pubsub.broadcastChain(), 1000);
 
 // app.get('/',cors(corsOptions),()=>{
 
@@ -62,7 +65,14 @@ function errorHandler(err, req, res, next) {
 app.use(notFound);
 app.use(errorHandler);
 
-const port = process.env.PORT || 5000;
-app.listen(port, () => {
-  console.log('Listening on port', port);
+const DEFAULT_PORT = 5000;
+let PEER_PORT;
+
+if (process.env.GENERATE_PEER_PORT === 'true') {
+  PEER_PORT = DEFAULT_PORT + Math.ceil(Math.random() * 1000);
+}
+
+const PORT = process.env.PORT || PEER_PORT || DEFAULT_PORT;
+app.listen(PORT, () => {
+  console.log('Listening on port', PORT);
 });
