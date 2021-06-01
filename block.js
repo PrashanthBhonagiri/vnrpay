@@ -25,6 +25,7 @@ class Block {
         do {
             nonce++;
             timestamp = new Date();
+            // console.log("timestamp in do-while loop - " ,timestamp);
             difficulty = Block.adjustDifficulty({originalBlock : lastBlock, timestamp});
             hash = cryptoHash(timestamp, lastHash, data, difficulty, nonce);
         } while (hexToBinary(hash).substring(0, difficulty) !== '0'.repeat(difficulty));
@@ -35,6 +36,7 @@ class Block {
         //     data ,
         //     hash , 
         // });
+        // console.log("returning timestamp from mine block = ", timestamp);
         return new this({
             timestamp, 
             lastHash,
