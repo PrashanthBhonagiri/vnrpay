@@ -7,7 +7,7 @@ const request = require('request');
 require('dotenv').config();
 
 const Blockchain = require('./blockchain');
-const PubSub = require('./pubsub');
+const PubSub = require('./app/pubsub');
 
 const app = express();
 
