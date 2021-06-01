@@ -8,9 +8,11 @@ const GENESIS_DATA = {
     difficulty : INITIAL_DIFFICULTY,
     nonce : 0,
 };
+const STARTING_BALANCE = 1000;
 
 module.exports = {
     GENESIS_DATA,
     INITIAL_DIFFICULTY,
-    MINE_RATE
+    MINE_RATE,
+    STARTING_BALANCE
 }
