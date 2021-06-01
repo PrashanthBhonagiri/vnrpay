@@ -2,16 +2,21 @@ const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
 const helmet = require('helmet');
+const request = require('request');
 
 require('dotenv').config();
 
 const Blockchain = require('./blockchain');
 const PubSub = require('./pubsub');
+
 const app = express();
 
 app.use(morgan('dev'));
 app.use(express.json());  
 app.use(helmet());
+
+const DEFAULT_PORT = 5000;
+const ROOT_NODE_ADDRESS = `http://localhost:${DEFAULT_PORT}`;
 
 // const whitelist = [
 //     'http://localhost:4200',
@@ -32,7 +37,7 @@ app.use(cors());
 const blockchain = new Blockchain();
 const pubsub = new PubSub({blockchain}); 
 
-setTimeout(() =>pubsub.broadcastChain(), 1000);
+// setTimeout(() =>pubsub.broadcastChain(), 1000);
 
 // app.get('/',cors(corsOptions),()=>{
 
@@ -50,6 +55,16 @@ app.post('/api/mine',(req,res,next) =>{
     res.redirect('/api/blocks');
 });
 
+const syncChains = () => {
+    request({url : `${ROOT_NODE_ADDRESS}/api/blocks`}, (error,response, body) =>{
+        if( !error && response.statusCode === 200) {
+            const rootChain = JSON.parse(body);
+            // console.log('replace chain on a sync  from sync chains function');
+            blockchain.replaceChain(rootChain);
+        }
+    });
+};
+
 function notFound(req, res, next) {
     res.status(404);
     const error = new Error(`Not Found - ${  req.originalUrl}`);
@@ -65,11 +80,10 @@ function errorHandler(err, req, res, next) {
       stack: err.stack,
     });
 }
-  
+
 app.use(notFound);
 app.use(errorHandler);
 
-const DEFAULT_PORT = 5000;
 let PEER_PORT;
 
 if (process.env.GENERATE_PEER_PORT === 'true') {
@@ -78,5 +92,8 @@ if (process.env.GENERATE_PEER_PORT === 'true') {
 
 const PORT = process.env.PORT || PEER_PORT || DEFAULT_PORT;
 app.listen(PORT, () => {
-  console.log('Listening on port', PORT);
+    console.log('Listening on port', PORT);
+    if( PORT !== DEFAULT_PORT) {
+        syncChains();
+    }
 });

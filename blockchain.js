@@ -50,7 +50,7 @@ class Blockchain {
     };
 
     replaceChain(chain) {
-        console.log("replaceChain called");
+        // console.log("replaceChain called");
         if (chain.length <= this.chain.length) {
             // console.error("incoming chain must be longer");
             return ;
