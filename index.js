@@ -45,7 +45,10 @@ const transactionPool = new TransactionPool();
 // app.get('/',cors(corsOptions),()=>{
 
 app.get('/api/blocks',(req,res,next)=>{
-    res.json(blockchain.chain);
+    res.json({
+        status : true,
+        Blockchain :  blockchain.chain
+    });
 }); 
 
 app.post('/api/mine',(req,res,next) =>{
@@ -60,14 +63,19 @@ app.post('/api/mine',(req,res,next) =>{
 
 app.post('/api/transact', (req,res,next) =>{
     const { amount, recipient} = req.body;
+    try {
+        const transaction = wallet.createTransaction({recipient, amount});
+        transactionPool.setTransaction(transaction);
+    
+        console.log('transactionPool = ', transactionPool);
+    
+        res.json({ status : true,transaction });
 
-    const transaction = wallet.createTransaction({recipient, amount});
+    }catch(err) {
+        next(err);
+    };
 
-    transactionPool.setTransaction(transaction);
 
-    console.log('transactionPool = ', transactionPool);
-
-    res.json({ transaction });
 });
 
 
@@ -87,13 +95,13 @@ function notFound(req, res, next) {
     next(error);
 }
   
-function errorHandler(err, req, res, next) {
-  console.log(err);
-    res.status(res.statusCode || 500);
+function errorHandler(err, req, res) {
+//   console.log(err);
+    res.status(res.statusCode || 400);
     res.json({
       status: false,
       message: err.message,
-      stack: err.stack,
+    //   stack: err.stack,
     });
 }
 
