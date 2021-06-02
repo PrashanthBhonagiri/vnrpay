@@ -64,7 +64,13 @@ app.post('/api/mine',(req,res,next) =>{
 app.post('/api/transact', (req,res,next) =>{
     const { amount, recipient} = req.body;
     try {
-        const transaction = wallet.createTransaction({recipient, amount});
+        let transaction = transactionPool.existingTransaction({inputAddress : wallet.publicKey});
+        if(transaction) {
+            transaction.update({senderWallet : wallet, recipient, amount});
+        }
+        else {
+            transaction = wallet.createTransaction({recipient, amount});
+        }
         transactionPool.setTransaction(transaction);
     
         console.log('transactionPool = ', transactionPool);
