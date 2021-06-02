@@ -37,9 +37,10 @@ const ROOT_NODE_ADDRESS = `http://localhost:${DEFAULT_PORT}`;
 app.use(cors());
 
 const blockchain = new Blockchain();
-const pubsub = new PubSub({blockchain}); 
 const wallet = new Wallet();
 const transactionPool = new TransactionPool();
+const pubsub = new PubSub({ blockchain, transactionPool, wallet });
+ 
 // setTimeout(() =>pubsub.broadcastChain(), 1000);
 
 // app.get('/',cors(corsOptions),()=>{
@@ -65,14 +66,15 @@ app.post('/api/transact', (req,res,next) =>{
     const { amount, recipient} = req.body;
     try {
         let transaction = transactionPool.existingTransaction({inputAddress : wallet.publicKey});
-        if(transaction) {
+        if(transaction ) {
+            console.log(transaction);
             transaction.update({senderWallet : wallet, recipient, amount});
         }
         else {
             transaction = wallet.createTransaction({recipient, amount});
         }
         transactionPool.setTransaction(transaction);
-    
+        pubsub.broadcastTransaction(transaction);
         // console.log('transactionPool = ', transactionPool);
     
         res.json({ status : true,transaction });

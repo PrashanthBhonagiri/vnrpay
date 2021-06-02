@@ -8,14 +8,15 @@ const credentials = {
 };
 
 const CHANNELS = {
-    TEST: 'TEST',
     BLOCKCHAIN: 'BLOCKCHAIN',
     TRANSACTION: 'TRANSACTION'
 };
 
 class PubSub {
-    constructor({ blockchain }) {
+    constructor({ blockchain, transactionPool, wallet }) {
         this.blockchain = blockchain;
+        this.transactionPool = transactionPool;
+        this.wallet = wallet;
 
         this.pubnub = new PubNub(credentials);
         
@@ -30,7 +31,14 @@ class PubSub {
           channel: CHANNELS.BLOCKCHAIN,
           message: JSON.stringify(this.blockchain.chain)
         });
-      }
+    };
+
+    broadcastTransaction( transaction ) {
+        this.publish({
+            channel : CHANNELS.TRANSACTION,
+            message : JSON.stringify(transaction),
+        });
+    };
 
     listener() {
         return {
@@ -44,6 +52,12 @@ class PubSub {
                     console.log("calling replace from pubsub listener");
                     this.blockchain.replaceChain(parsedMessage);
                 }
+                else if( channel === CHANNELS.TRANSACTION ) {
+                    if(!this.transactionPool.existingTransaction({inputAddress : this.wallet.publicKey})) {
+                        this.transactionPool.setTransaction(parsedMessage);
+                    }
+                }
+                
             }
         }
     }
