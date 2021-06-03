@@ -1,5 +1,8 @@
 const Block =require('./block');
 const { cryptoHash } = require('../util');
+const { REWARD_INPUT, MINING_REWARD } = require('../config');
+const Transaction = require('../wallet/transaction');
+const Wallet = require('../wallet');
 
 class Blockchain {
     constructor() {
@@ -13,7 +16,44 @@ class Blockchain {
         });
         this.chain.push(newBlock);
     }
+    validTransactionData({ chain }) {
+        for(let i=1;i<chain.length;i++) {
+            const block = chain[i];
+            const transactionSet = new Set();
+            let rewardTransactionCount=0;
+            for(let transaction of block.data) {
+                if(transaction.input.address === REWARD_INPUT.address){
+                    rewardTransactionCount++;
+                    if(rewardTransactionCount > 1) {
+                        return false;
+                    }
+                    if(Object.values(transaction.outputMap)[0] !== MINING_REWARD) {
+                        return false;
+                    }
+                }
+                else {
+                    if(!Transaction.validTransaction(transaction)){
+                        return false;
+                    }
 
+                    const trueBalance = Wallet.calculateBalance({
+                        chain : this.chain,
+                        address : transaction.input.address,
+                    });
+                    if(transaction.input.amount !== trueBalance) {
+                        return false;
+                    }
+                    if(transactionSet.has(transaction)) {
+                        return false;
+                    }
+                    else {
+                        transactionSet.add(transaction);
+                    }
+                }
+            }
+        }
+        return true;
+    }
     static isValidChain(chain){
         
         if(JSON.stringify(chain[0]) !== JSON.stringify(Block.genesis())){
