@@ -26,6 +26,35 @@ describe('TransactionPool', () => {
             expect(transactionPool.existingTransaction({inputAddress : senderWallet.publicKey})).toBe(transaction);
         });
     });
+
+    describe('validTransactions()', () => {
+        let validTransactions;
+        beforeEach(()=>{
+            validTransactions = [];
+
+            for(let i=0;i<10;i++) {
+                transaction = new Transaction({
+                    senderWallet, 
+                    recipient : 'any-user',
+                    amount : 10
+                });
+                if(i%3==0){
+                    transaction.input.amount = 99999;
+                }
+                else if(i%3==1) {
+                    transaction.input.signature = new Wallet().sign();
+                }else {
+                    validTransactions.push(transaction);
+                }
+                transactionPool.setTransaction(transaction);
+                
+            }
+        });
+        it('returns the valid transactions',()=>{
+            expect(transactionPool.validTransactions()).toEqual(validTransactions);
+        });
+    })
+    
     
     
 
