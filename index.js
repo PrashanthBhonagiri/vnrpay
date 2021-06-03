@@ -10,6 +10,7 @@ const Blockchain = require('./blockchain');
 const PubSub = require('./app/pubsub');
 const TransactionPool = require('./wallet/transaction-pool');
 const Wallet = require('./wallet');
+const TransactionMiner = require('./app/transaction-miner');
 
 const app = express();
 
@@ -40,7 +41,8 @@ const blockchain = new Blockchain();
 const wallet = new Wallet();
 const transactionPool = new TransactionPool();
 const pubsub = new PubSub({ blockchain, transactionPool, wallet });
- 
+const transactionMiner = new TransactionMiner({blockchain, transactionPool,wallet,pubsub});
+
 // setTimeout(() =>pubsub.broadcastChain(), 1000);
 
 // app.get('/',cors(corsOptions),()=>{
@@ -91,6 +93,11 @@ app.get('/api/transaction-pool-map',(req,res,next) =>{
         status : true,
         transactionPoolMap : transactionPool.transactionMap
     })
+});
+
+app.get('/api/mine-transactions',(req,res,next)=>{
+    transactionMiner.mineTransactions();
+    res.redirect('/api/blocks');
 });
 
 const syncWithRootState = () => {
