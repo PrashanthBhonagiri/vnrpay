@@ -66,6 +66,23 @@ describe('Wallet', () => {
             expect(transaction.outputMap[recipient]).toEqual(amount);
          });
       });
+      describe('and a chain is passed', () => {
+         it('calls `wallet.calculateBalance`',()=>{
+            const calculateBalanceMonk = jest.fn();
+
+            const originalCalculateBalance = Wallet.calculateBalance;
+
+            Wallet.calculateBalance = calculateBalanceMonk;
+            wallet.createTransaction({
+               recipient : 'foo-user',
+               amount : 50,
+               chain :new Blockchain().chain,
+            });
+            expect(calculateBalanceMonk).toHaveBeenCalled();
+
+            Wallet.calculateBalance = originalCalculateBalance;
+         });
+      });
       
       
    });
@@ -116,7 +133,7 @@ describe('Wallet', () => {
                transaction2.outputMap[wallet.publicKey]
                )
          });
-      })
+      });
       
       
    });
