@@ -9,7 +9,11 @@ class TransactionPool {
     setTransaction(transaction) {
         this.transactionMap[transaction.id] = transaction;
     };
-    
+    clear() {
+        //final step of mine transaction clears the local pool
+        this.transactionMap ={};
+
+    }
     setMap(transactionMap) {
         this.transactionMap = transactionMap;
     };
@@ -22,6 +26,19 @@ class TransactionPool {
     validTransactions() {
         return Object.values(this.transactionMap).filter(
             transaction => Transaction.validTransaction(transaction) );
+    };
+
+    clearBlockchainTransactions({chain}) {
+        // for peers call this method when they acceot the new block chain to be replaced
+        for(let i=1;i<chain.length;i++){
+            const block = chain[i];
+
+            for(let transaction of block.data) {
+                if(this.transactionMap[transaction.id]) {
+                    delete this.transactionMap[transaction.id];
+                }
+            }
+        }
     }
 };
 module.exports = TransactionPool;
