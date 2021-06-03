@@ -89,7 +89,7 @@ class Blockchain {
         return true;
     };
 
-    replaceChain(chain, onSuccess) {
+    replaceChain(chain, validateTransaction,onSuccess) {
         // console.log("replaceChain called");
         if (chain.length <= this.chain.length) {
             // console.error("incoming chain must be longer");
@@ -97,6 +97,9 @@ class Blockchain {
         }
         if( !Blockchain.isValidChain(chain)) {
             // console.error("incoming chain must be valid");
+            return ;
+        }
+        if(validateTransaction && !this.validTransactionData({chain})) {
             return ;
         }
         if(onSuccess) {

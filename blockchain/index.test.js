@@ -126,21 +126,33 @@ describe('Blockchian', () => {
             describe('and the chain is invalid', () => {
                 it('does not repalce the chain',() =>{
                     newChain.chain[2].hash = 'fake-hash';
-                    blockchain.replaceChain(newChain.chain);
+                    blockchain.replaceChain(newChain.chain,false);
 
                     expect(blockchain.chain).toEqual(originalChain);
                 }); 
-            })
+            });
             describe('and the chain is valid', () => {
                 it('replaces the chain',() =>{
                     blockchain.replaceChain(newChain.chain);
 
                     expect(blockchain.chain).toEqual(newChain.chain);
                 });
-            })
+            });
             
             
-        })
+        });
+        
+        describe('and the `validTransactions` flag is true', () => {
+            it('calls validTransactionData()',()=>{
+                const validTransactionDataMock = jest.fn();
+
+                blockchain.validTransactionData = validTransactionDataMock;
+                newChain.addBlock({data : 'foo'});
+                blockchain.replaceChain(newChain.chain, true);
+
+                expect(validTransactionDataMock).toHaveBeenCalled();
+            });
+        });
         
         
     });
@@ -226,4 +238,4 @@ describe('Blockchian', () => {
     });
     
     
-})
+});

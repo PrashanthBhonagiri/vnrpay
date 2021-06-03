@@ -50,7 +50,7 @@ class PubSub {
 
                 if(channel === CHANNELS.BLOCKCHAIN) {
                     console.log("calling replace from pubsub listener");
-                    this.blockchain.replaceChain(parsedMessage,()=>{
+                    this.blockchain.replaceChain(parsedMessage, true, ()=>{
                         this.transactionPool.clearBlockchainTransactions({chain :parsedMessage
                         });
                     });
