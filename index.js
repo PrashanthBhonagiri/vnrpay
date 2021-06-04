@@ -3,6 +3,7 @@ const morgan = require('morgan');
 const cors = require('cors');
 const helmet = require('helmet');
 const request = require('request');
+const path = require('path');
 
 require('dotenv').config();
 
@@ -17,6 +18,8 @@ const app = express();
 app.use(morgan('dev'));
 app.use(express.json());  
 app.use(helmet());
+
+app.use(express.static(path.join(__dirname,'client/dist')));
 
 const DEFAULT_PORT = 5000;
 const ROOT_NODE_ADDRESS = `http://localhost:${DEFAULT_PORT}`;
@@ -113,6 +116,43 @@ app.get('/api/wallet-info',(req,res,next)=>{
     })
 });
 
+app.get('*',(req,res,next)=>{
+    res.sendFile(path.join(__dirname, 'client/dist/index.html'));
+});
+
+const walletFoo = new Wallet();
+const walletBar = new Wallet();
+
+const generateWalletTransaction = ({wallet, recipient, amount})=>{
+    const transaction = wallet.createTransaction({recipient, amount, chain : blockchain.chain});
+    transactionPool.setTransaction(transaction);
+};
+
+const walletAction  = () =>generateWalletTransaction({
+ wallet, recipient : walletFoo.publicKey, amount : 10   
+});
+const walletFooAction = () => generateWalletTransaction({
+    wallet : walletFoo, recipient : walletBar.publicKey, amount : 20
+});
+
+const walletBarAction = () => generateWalletTransaction({
+    wallet : walletBar, recipient : wallet.publicKey, amount : 15
+});
+
+// for(let i=0;i<10;i++) {
+//     if(i%3==0) {
+//         walletAction();
+//         walletFooAction();
+//     }
+//     else if(i%3==0) {
+//         walletAction();
+//         walletBarAction();
+//     } else {
+//         walletFooAction();
+//         walletBarAction();
+//     }
+//     transactionMiner.mineTransactions();
+// }
 const syncWithRootState = () => {
     request({url : `${ROOT_NODE_ADDRESS}/api/blocks`}, (error,response, body) =>{
         if( !error && response.statusCode === 200) {
