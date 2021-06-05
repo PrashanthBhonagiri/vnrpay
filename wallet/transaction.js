@@ -52,18 +52,19 @@ class Transaction {
     static validTransaction( transaction ) {
         const { input, outputMap} = transaction;
         const { address, amount, signature} = input;
-        // console.log("outputMap", outputMap);
+        console.log("outputMap", outputMap);
         const outputTotal = Object.values(outputMap).reduce((total, outputAmount) => total+outputAmount);
 
         if(amount != outputTotal) {
-            // console.log("amount = ", amount, "outputTotal = ", outputTotal);
+            console.log("amount = ", amount, "outputTotal = ", outputTotal);
             return false;
         }
 
         if(!verifySignature({publicKey : address, data : outputMap, signature})) {
+            console.log("issue in verifying signature");
             return false;
         }
-
+        console.log("transaction is valid");
         return true;
     };
 

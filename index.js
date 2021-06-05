@@ -3,6 +3,7 @@ const morgan = require('morgan');
 const cors = require('cors');
 const helmet = require('helmet');
 const request = require('request');
+const path = require('path');
 
 require('dotenv').config();
 
@@ -46,11 +47,12 @@ const transactionMiner = new TransactionMiner({blockchain, transactionPool,walle
 // setTimeout(() =>pubsub.broadcastChain(), 1000);
 
 // app.get('/',cors(corsOptions),()=>{
+app.use(express.static(path.join(__dirname, 'client/dist/client')));
 
 app.get('/api/blocks',(req,res,next)=>{
     res.json({
         status : true,
-        Blockchain :  blockchain.chain
+        Blockchain :  blockchain.chain.reverse(),
     });
 }); 
 
@@ -92,6 +94,85 @@ app.post('/api/transact', (req,res,next) =>{
 
 });
 
+app.post('/api/dummy-transactions',(req,res,next) =>{
+    let  {recipients} = req.body;
+    console.log(recipients);
+    let transactions = [];
+    try {
+        for(let i=0;i<2;i++){
+            for(let recipient of recipients) {
+                if(recipient) {
+                    const amount = Math.floor((10-1)*Math.random() + 1);
+                    let transaction = transactionPool.existingTransaction({inputAddress : wallet.publicKey});
+                    if(transaction ) {
+                        console.log(transaction);
+                        transaction.update({senderWallet : wallet, recipient, amount});
+                    }
+                    else {
+                        transaction = wallet.createTransaction({
+                            recipient,
+                            amount,
+                            chain : blockchain.chain
+                        });
+                    }
+                    transactionPool.setTransaction(transaction);
+                    pubsub.broadcastTransaction(transaction);
+                    // console.log('transactionPool = ', transactionPool);
+                    transactions.push(transaction);
+                }
+                
+            } 
+
+        }
+
+        res.json({ status : true,transactions });
+    }catch(err) {
+        next(err);
+    };
+});
+
+
+app.post('/api/dummy-transactions-mine',(req,res,next) =>{
+    let  {recipients} = req.body;
+    console.log(recipients);
+    let transactions = [];
+    try {
+        for(let i=0;i<5;i++){
+            for(let recipient of recipients) {
+                if(recipient) {
+                    const amount = Math.floor((60-10)*Math.random() + 10);
+                    let transaction = transactionPool.existingTransaction({inputAddress : wallet.publicKey});
+                    if(transaction ) {
+                        console.log(transaction);
+                        transaction.update({senderWallet : wallet, recipient, amount});
+                    }
+                    else {
+                        transaction = wallet.createTransaction({
+                            recipient,
+                            amount,
+                            chain : blockchain.chain
+                        });
+                    }
+                    transactionPool.setTransaction(transaction);
+                    pubsub.broadcastTransaction(transaction);
+                    // console.log('transactionPool = ', transactionPool);
+                    transactions.push(transaction);
+                }
+                
+            } 
+            transactionMiner.mineTransactions();
+            // res.redirect('/api/blocks');
+
+        }
+
+
+        res.json({ status : true,transactions });
+    }catch(err) {
+        next(err);
+    };
+});
+
+
 app.get('/api/transaction-pool-map',(req,res,next) =>{
     res.json({
         status : true,
@@ -112,6 +193,12 @@ app.get('/api/wallet-info',(req,res,next)=>{
         balance : Wallet.calculateBalance({chain : blockchain.chain, address}), 
     })
 });
+
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'client/dist/client/index.html'));
+});
+
+
 
 const syncWithRootState = () => {
     request({url : `${ROOT_NODE_ADDRESS}/api/blocks`}, (error,response, body) =>{

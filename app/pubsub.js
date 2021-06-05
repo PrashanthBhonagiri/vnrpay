@@ -44,7 +44,7 @@ class PubSub {
         return {
             message : (messageObject) => {
                 const { channel, message } = messageObject;
-                console.log(`Message received . Channel ${channel}. Mesasge ${message}`);
+                // console.log(`Message received . Channel ${channel}. Mesasge ${message}`);
 
                 const parsedMessage = JSON.parse(message);
 

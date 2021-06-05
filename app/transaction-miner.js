@@ -8,7 +8,7 @@ class TransactionMiner{
         this.transactionPool = transactionPool;
         this.wallet = wallet;
         this.pubsub = pubsub
-    }
+    } 
 
     mineTransactions(){
         
