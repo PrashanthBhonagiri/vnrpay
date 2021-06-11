@@ -20,7 +20,8 @@ app.use(express.json());
 app.use(helmet());
 
 const DEFAULT_PORT = 5000;
-const ROOT_NODE_ADDRESS = `http://localhost:${DEFAULT_PORT}`;
+// const ROOT_NODE_ADDRESS = `http://localhost:${DEFAULT_PORT}`;
+const ROOT_NODE_ADDRESS = `https://vnrpay.herokuapp.com`;
 
 // const whitelist = [
 //     'http://localhost:4200',
